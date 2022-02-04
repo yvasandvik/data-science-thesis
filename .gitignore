@@ -1,0 +1,4 @@
+*.txt
+*.RData
+*.csv
+method/.ipynb_checkpoints
