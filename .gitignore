@@ -1,4 +1,6 @@
 *.txt
 *.RData
 *.csv
+*.gz
+*.gff
 method/.ipynb_checkpoints
