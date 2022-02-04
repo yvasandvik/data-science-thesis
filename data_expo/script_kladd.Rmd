@@ -1,0 +1,232 @@
+---
+title: "Finding K-mers"
+author: "Yva Sandvik"
+date: "1/3/2022"
+output: html_document
+---
+
+# Loading sequence data
+
+```{r}
+
+load("~/Documents/NMBU/Semester 11/DAT390/R/15 Genomer - CDS/GCF_000005845.2_ref.gene.tbl.RData")
+G1 <- ref.gene.tbl
+
+```
+
+# Finding GC content in sequences and creating GC content features
+
+The G+C Content functions:
+Calculates the fraction of G+C bases of the input nucleic acid sequence(s). It reads in nucleic acid sequences, sums the number of ’g’ and ’c’ bases and writes out the result as the fraction (in the interval 0.0 to 1.0) to the total number of ’a’, ’c’, ’g’ and ’t’ bases. Global G+C content GC, G+C in the first position of the codon bases GC1, G+C in the second position of the codon bases GC2, and G+C in the third position of the codon bases GC3 can be computed. All functions can take ambiguous bases into account when requested.
+
+```{r}
+
+library('seqinr')
+
+# Function that computes 4 GC features: global GC content (GC), GC content in the first reading frame (GC1), GC content in the second reading frame (GC2), and GC content in the third reading frame (GC3).
+
+GC_features_1 <- function(data){
+  data %>%
+    select(Sequence) %>%
+    mutate(Sequence = s2c(Sequence), 
+           GC = GC(Sequence),
+           GC1 = GC1(Sequence),
+           GC2 = GC2(Sequence),
+           GC3 = GC3(Sequence)) -> new.tbl
+  return(new.tbl)
+}
+
+GC_G1 <- GC_features_1(G1)
+
+```
+```{r}
+GC_features_2 <- function(data){
+  data %>%
+    select(Sequence) %>%
+    mutate(Sequence = strsplit(Sequence, ''),
+           Sequence = flatten_chr(Sequence), 
+           GC = GC(Sequence),
+           GC1 = GC1(Sequence),
+           GC2 = GC2(Sequence),
+           GC3 = GC3(Sequence)) -> new.tbl
+  return(new.tbl)
+}
+
+GC_G1 <- GC_features_2(G1)
+
+```
+
+```{r}
+G1 %>%
+  select(Length, Sequence) %>%
+  mutate(Sequence = lapply(Sequence, s2c)) -> G1_test1
+```
+
+```{r}
+G1 %>%
+  select(Length, Sequence) %>%
+  mutate(Sequence = strsplit(Sequence, ''),
+         Sequence = flatten_chr(Sequence)) -> G1_test2
+```
+
+```{r}
+test <- new.tbl$Sequence[1]
+print(test)
+print(typeof(test))
+```
+
+```{r}
+test_unlist <- unlist(new.tbl$Sequence[1])
+print(test_unlist)
+print(typeof(test_unlist))
+```
+
+Hvofor fungerer ikke funksjonen over?? Brude fungere i følge resonnement under. 
+
+```{r}
+test <- G1$Sequence[1]
+print(test)
+print(typeof(test))
+```
+
+```{r}
+test2 <- s2c(test)
+print(test2)
+print(typeof(test2))
+```
+```{r}
+GC_test <- GC(test2)
+print(GC_test)
+```
+
+Midlertidig alternativ funksjon.
+
+```{r}
+
+GC_features2 <- function(data){
+  data %>%
+    select(Length, Sequence) %>%
+    mutate(Sequence = strsplit(Sequence, '')) -> new.tbl
+  GC <- c(1:nrow(new.tbl))
+  GC1 <- c(1:nrow(new.tbl))
+  GC2 <- c(1:nrow(new.tbl))
+  GC3 <- c(1:nrow(new.tbl))
+  for(i in GC){
+    seq <- unlist(new.tbl$Sequence[i])
+    GC[i] <- GC(seq)
+    GC1[i] <- GC1(seq)
+    GC2[i] <- GC2(seq)
+    GC3[i] <- GC3(seq)
+  }
+  new.tbl %>%
+    select(Length, Sequence) %>%
+    mutate(
+      GC = GC,
+      GC1 = GC1,
+      GC2 = GC2, 
+      GC3 = GC3) -> result
+  return(result)
+}
+
+GC_G1 <- GC_features2(G1)
+
+```
+
+# Finding K-mer frequency features: 2-mer frequencies, 3-mer frequencies, 4-mer frequencies, 5-mer frequencies and 6-mer frequencies.
+
+The K-mer frequencies correspond to the number of occurrences of each k-length fragment of a DNA sequence, being a 2-mer corresponding to a fragment of 2 nucleotides, 3-mer corresponding to a fragment of 3 nucleotides and so on. The k-mer not is a feature commonly used by gene predictors (copy paste GeneRFinder).
+
+### Using KmerCount from 'microclass' package
+
+```{r eval=FALSE}
+
+library(microclass)
+library(ggplot2)
+
+# Function that returns a dataframe with KmerCount results (reading frame number 1)
+
+count_Kmers <- function(input_data, length_Kmer=4){
+  Codon_count <- as.data.frame(KmerCount(input_data$Sequence, K=length_Kmer, col.names = TRUE))
+  return(Codon_count)
+}
+
+G1_KmerCount <- count_Kmers(G1)
+
+# Gives same result as above just not as a data frame but returns a matrix
+test <- KmerCount(G1$Sequence, K = 3, col.names = TRUE)
+
+```
+
+# Testing new function of KmerCount with in-frame-Kmer option.
+
+```{r}
+
+library(remotes)
+install_github('larssnip/microseq', 'translate-codon', force = TRUE)
+install_github('larssnip/microclass', 'in-frame-K-mer', force = TRUE)
+library(microclass)
+
+G1_in_frame_KmerCount <- KmerCount(G1$Sequence, K = 3, col.names = TRUE, codon = TRUE)
+
+```
+
+
+# Finding codon bias features.
+
+Codon usage bias refers to the differences in the num- ber of synonymous codons in coding DNA. A codon is a nucleotide triplet that encodes an amino acid (e.g. ATG). Since 64 combinations can be made with 4 nucleotides taken three at a time and considering that there are only 20 amino acids, there is more than one codon per amino acid, in most cases. Two or more codons that encode the same amino acid are called synonymous codon.
+
+*Variations of features* from codon usage has being used by predictors as FragGeneScan, MetaGene and Orphelia. (copy paste GeneRFinder).
+
+# Testing CUB function in vhica package 
+
+```{r}
+library(vhica)
+
+path2 <- "~/Documents/NMBU/Master/Data Science Master/R/fna/GCF_000005845.2_ASM584v2_genomic.fna.gz"
+
+seq <- read.fasta(path2)
+
+seq.file <- system.file(path2, package = 'vhica')
+
+test_cub <- CUB(seq.file)
+
+```
+
+```{r}
+library(ape)
+
+seq <- read.dna(path2)
+```
+
+```{r}
+G1.dataset %>% 
+  filter(Type == 'CDS') -> cds.tbl
+
+G1.dataset %>% 
+  filter(Type == 'LORF') -> lorfs.tbl
+
+```
+
+```{r}
+# Histogram plot of uneven dataset (uneven number of negative and positive orfs), but it has been attempted to make the length distribution equal (dataset=1)
+
+fig_hist_selected <- G.dataset %>%
+  ggplot(aes(x=Length, fill=Type)) +
+  geom_histogram( color="#e9ecef", alpha=0.6, position = 'identity') +
+  scale_fill_manual(values=c("#69b3a2", "#404080")) +
+  theme_ipsum() +
+  labs(fill="")
+
+print(fig_hist_selected)
+```
+
+
+
+
+
+
+
+
+
+
+

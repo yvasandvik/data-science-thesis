@@ -1,0 +1,102 @@
+---
+title: "Making plots"
+author: "Yva Sandvik"
+date: "1/27/2022"
+output: html_document
+---
+
+# Loading Rdata
+
+```{r}
+
+load("~/Documents/NMBU/Semester 12/Data Science Master/data-science-thesis/data_expo/G1_orfs.RData")
+load("~/Documents/NMBU/Semester 12/Data Science Master/data-science-thesis/data_expo/G2_orfs.RData")
+load("~/Documents/NMBU/Semester 12/Data Science Master/data-science-thesis/data_expo/G3_orfs.RData")
+load("~/Documents/NMBU/Semester 12/Data Science Master/data-science-thesis/data_expo/G4_orfs.RData")
+load("~/Documents/NMBU/Semester 12/Data Science Master/data-science-thesis/data_expo/G5_orfs.RData")
+
+```
+
+
+```{r, eval=FALSE}
+
+G1.dataset %>% select(Length, Type, Genome) -> G1
+G2.dataset %>% select(Length, Type, Genome) -> G2
+G3.dataset %>% select(Length, Type, Genome) -> G3
+G4.dataset %>% select(Length, Type, Genome) -> G4
+G5.dataset %>% select(Length, Type, Genome) -> G5
+
+Length.tbl <- do.call("rbind", list(G1, G2, G3, G4, G5))
+
+Length.tbl %>%
+  filter(Length < 4000) -> Length.tbl
+
+save(Length.tbl, file="Length_tbl.RData")
+
+```
+
+# Both CDS and LORFS
+
+```{r}
+
+library(tidyverse)
+
+# Using geom_density() to make GC density plot
+fig <- ggplot(data=Length.tbl, aes(Length, colour = Genome)) +
+  geom_density() + xlab('Length') + ylab('Density') + labs(colour = "Genome") + ggtitle('LORFs and Coding Genes')
+
+ggsave("Length_5.pdf", width = 10, height = 5)
+#ggsave("Length_5.png")
+
+print(fig)
+
+```
+
+# Only CDS
+
+```{r, eval=FALSE}
+
+Length.tbl %>%
+  filter(Type == 'CDS') %>%
+  filter(Length < 4000) -> Length.tbl.cds
+
+Length.tbl %>%
+  filter(Type == 'LORF') %>%
+  filter(Length < 4000) -> Length.tbl.lorfs
+
+#save(Length.tbl.lorfs, file="Length_tbl_lorfs.RData")
+##save(Length.tbl.cds, file="Length_tbl_cds.RData")
+```
+
+```{r}
+
+library(tidyverse)
+
+# Using geom_density() to make GC density plot
+fig <- ggplot(data=Length.tbl.cds, aes(Length, colour = Genome)) +
+  geom_density() + xlab('Length') + ylab('Density') + labs(colour = "Genome") + ggtitle('Coding Genes')
+
+ggsave("Length_5_cds.pdf", width = 10, height = 5)
+#ggsave("Length__5_cds.png")
+
+print(fig)
+
+```
+# Only LORFS
+
+```{r}
+
+library(tidyverse)
+
+# Using geom_density() to make GC density plot
+fig <- ggplot(data=Length.tbl.lorfs, aes(Length, colour = Genome)) +
+  geom_density() + xlab('Length') + ylab('Density') + labs(colour = "Genome") + ggtitle('LORFs')
+
+ggsave("Length_5_lorfs.pdf", width = 10, height = 5)
+#ggsave("Length__5_lorfs.png")
+
+print(fig)
+
+```
+
+

@@ -1,0 +1,23 @@
+---
+title: "Convert files to csv"
+author: "Yva Sandvik"
+date: "1/25/2022"
+output: html_document
+---
+
+```{r}
+load("~/Documents/NMBU/Semester 12/Data Science Master/R/G1_orf_features.RData")
+write.csv(G1.features, file="G1.features.csv")
+load("~/Documents/NMBU/Semester 12/Data Science Master/R/G2_orf_features.RData")
+write.csv(G2.features, file="G2.features.csv")
+load("~/Documents/NMBU/Semester 12/Data Science Master/R/G3_orf_features.RData")
+write.csv(G3.features, file="G3.features.csv")
+load("~/Documents/NMBU/Semester 12/Data Science Master/R/G4_orf_features.RData")
+write.csv(G4.features, file="G4.features.csv")
+load("~/Documents/NMBU/Semester 12/Data Science Master/R/G5_orf_features.RData")
+write.csv(G5.features, file="G5.features.csv")
+load("~/Documents/NMBU/Semester 12/Data Science Master/R/G6_orf_features.RData")
+write.csv(G6.features, file="G6.features.csv")
+load("~/Documents/NMBU/Semester 12/Data Science Master/R/G7_orf_features.RData")
+write.csv(G7.features, file="G7.features.csv")
+```

@@ -1,0 +1,382 @@
+---
+title: "Data Exploration"
+author: "Yva Sandvik"
+date: "1/13/2022"
+output: html_document
+---
+
+---
+title: "Data pre-processing"
+author: "Yva Sandvik"
+date: "1/7/2022"
+output: html_document
+---
+
+# Load genome files
+
+*fna*/GCF_000005845.2_ASM584v2_genomic.fna.gz -> Contains the complete genome file. This file contains the raw sequences after sequencing the entire genome.
+
+*faa*/GCF_000005845.2_ASM584v2_protein.faa.gz -> Contains all protein coding sequences (CDS) in genome but translated to amino acids.
+
+*gff*/GCF_000005845.2_ASM584v2_genomic.gff -> Contains all genes. Both in nucleotide bases and amino acids, hence two files per genome in folder. 
+
+# Last inn genomet
+
+```{r}
+
+library(utils)
+library(microseq)
+
+path_fna <- "~/Documents/NMBU/Semester 12/Data Science Master/data-science-thesis/data_expo/fna/GCF_000006925.2_ASM692v2_genomic.fna.gz"
+G <- readFasta(path_fna)
+
+path_gff <- "~/Documents/NMBU/Semester 12/Data Science Master/data-science-thesis/data_expo/gff/GCF_000006925.2_ASM692v2_genomic.gff"
+
+
+readGFF(path_gff) %>% 
+  filter(Type == "CDS") -> G.gff
+
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(hrbrthemes)
+
+```
+
+# Lag tabell med kun de positive ORFene i genomet
+
+```{r}
+
+# Lag signatur
+G.gff %>%
+  mutate(Signature = if_else(G.gff$Strand == '+', str_c(Seqid, End, Strand), str_c(Seqid, Start, Strand))) -> G.gff
+
+# Hent ut sekvensene til kun de psitive ORFene
+Seq.gff <- gff2fasta(G.gff, G)
+G.cds <- bind_cols(G.gff, Seq.gff)
+
+# Beregn og sorter etter lengde
+G.cds %>%
+  mutate(Length = str_length(Sequence),
+         Dataset = 1) -> G.cds
+
+G.cds <- subset(G.cds, select=c(Signature, Type, Sequence, Length, Dataset))
+G.cds <- arrange(G.cds, Length)
+
+```
+
+# Lag tabell med kun de negative ORFene i genomet
+
+```{r}
+
+# Finn alle ORFer og deretter LORFer
+# *ORF tabellene fra tidligere er de samme som disse* G1.orfs
+
+findOrfs(G) %>% 
+  lorfs() %>% 
+  filter(Length >= 45) -> lorf.tbl # filtrerer ut lengden basert på den korteste CDS
+
+# Hent ut sekvensene med gff2fsta funksjonen
+
+Seq.lorfs <- gff2fasta(lorf.tbl, G)
+G.lorfs <- bind_cols(lorf.tbl, Seq.lorfs)
+
+# Lag ny signatur
+
+G.lorfs <- subset(G.lorfs, select = -c(Signature))
+
+G.lorfs %>%
+  mutate(Signature = if_else(G.lorfs$Strand == '+', str_c(Seqid, End, Strand), str_c(Seqid, Start, Strand))) -> G.lorfs
+
+# Beregn og sorter etter lengde
+  
+G.lorfs <- subset(G.lorfs, select=c(Signature, Type, Sequence, Length)) 
+G.lorfs <- arrange(G.lorfs, Length)
+
+# Filtrer vekk de LORFene som samsvarer med de positive, dvs har samme Signatur
+
+G.lorfs %>%
+  filter(!(Signature %in% G.cds$Signature)) -> G.lorfs
+  
+#library(dplyr)
+#G1.lorfs <- anti_join(G1.lorfs, G1.cds, by="Signature") # Se kommentarer under
+
+```
+
+*Genome 1:*
+Ikke alle CDS orfene blir fjernet med anti_join: 151467-4324 = 147143
+
+G1.lorfs har 147177 rader etter anti_join er kjørt. Dvs kun 4290 CDS orfer har blitt fjernet. Hva med de resterende 34? (4324 - 4290 = 34)
+
+*Genome 2:*
+Antall lorfs: 68906
+Antall cds fjernet fra lorfene: 5572
+
+Kun 1 resterende.
+
+# Lag lengdefordeling for de positive ORFene
+
+```{r}
+
+G.cds$Category[G.cds$Length <= 100] <- "1"
+G.cds$Category[(G.cds$Length > 100) & (G.cds$Length <= 200)] <- "2"
+G.cds$Category[(G.cds$Length > 200) & (G.cds$Length <= 300)] <- "3"
+G.cds$Category[(G.cds$Length > 300) & (G.cds$Length <= 500)] <- "4"
+G.cds$Category[(G.cds$Length > 500) & (G.cds$Length <= 800)] <- "5"
+G.cds$Category[(G.cds$Length > 800) & (G.cds$Length <= 1100)] <- "6"
+G.cds$Category[(G.cds$Length > 1100) & (G.cds$Length <= 1400)] <- "7"
+G.cds$Category[G.cds$Length > 1400] <- "8"
+G.cds$Category <- factor(G.cds$Category, levels = c("1","2","3","4","5","6","7","8"), labels = c("0-100", "100-200","200-300","300-500","500-800","800-1100","1100-1400",">1400"))
+
+G.cds%>% 
+  group_by(Category) %>%
+  summarise(Count = length(Category)) -> summary_cds
+
+```
+
+# Lag lengdefordeling for de negative ORFene
+
+```{r}
+
+G.lorfs$Category[G.lorfs$Length <= 100] <- "1"
+G.lorfs$Category[(G.lorfs$Length > 100) & (G.lorfs$Length <= 200)] <- "2"
+G.lorfs$Category[(G.lorfs$Length > 200) & (G.lorfs$Length <= 300)] <- "3"
+G.lorfs$Category[(G.lorfs$Length > 300) & (G.lorfs$Length <= 500)] <- "4"
+G.lorfs$Category[(G.lorfs$Length > 500) & (G.lorfs$Length <= 800)] <- "5"
+G.lorfs$Category[(G.lorfs$Length > 800) & (G.lorfs$Length <= 1100)] <- "6"
+G.lorfs$Category[(G.lorfs$Length > 1100) & (G.lorfs$Length <= 1400)] <- "7"
+G.lorfs$Category[G.lorfs$Length > 1400] <- "8"
+G.lorfs$Category <- factor(G.lorfs$Category, levels = c("1","2","3","4","5","6","7","8"), labels = c("0-100", "100-200","200-300","300-500","500-800","800-1100","1100-1400",">1400"))
+
+G.lorfs%>% 
+  group_by(Category) %>%
+  summarise(Count = length(Category)) -> summary_lorfs
+
+```
+
+# Plot av lengder 
+
+```{r}
+hist(G.lorfs$Length, col="red", xlab="Length",
+   main="Length distribution of lorfs")
+```
+```{r}
+hist(G.cds$Length, col="blue", xlab="Length",
+   main="Length distribution of cds")
+```
+
+# Plots av lengder før omfordeling
+
+```{r}
+
+# Density plot
+
+G.dataset <- bind_rows(G.lorfs, G.cds)
+
+fig_density <- ggplot(data=G.dataset, aes(Length, colour = Type)) +
+  geom_density() + xlab('Length') + ylab('Density') + labs(colour = "Type") + 
+  ggtitle('Length distribution of CDS and LORFs')
+
+ggsave("Length_density_G3_before.pdf", width = 10, height = 5)
+
+print(fig_density)
+
+```
+```{r}
+
+# Normal histogram plot
+
+
+fig_hist <- ggplot(data=G.dataset, aes(Length, colour = Type)) + 
+  geom_histogram(alpha=0.6, position = 'identity') + xlab('Length') + ylab('Number of ORFs') + 
+  ggtitle('Length distribution of CDS and LORFs')
+
+ggsave("Length_hist_G3_before.pdf", width = 10, height = 5)
+
+print(fig_hist)
+```
+
+
+# Trekk ut negative ORFer slik at lengdefordelingen er ca lik i de to datasettene
+
+```{r}
+
+# Denne koden må justeres ut i fra hvilket genom man prøver å prosessere
+
+cat_1 <- G.lorfs[c(1:as.integer(summary_lorfs$Count[1])),] 
+cat_2 <- G.lorfs[c(as.integer(summary_lorfs$Count[1]+1):as.integer(sum(summary_lorfs$Count[1:2]))),]
+cat_3 <- G.lorfs[c(as.integer(sum(summary_lorfs$Count[1:2])+1):as.integer(sum(summary_lorfs$Count[1:3]))),]
+cat_4 <- G.lorfs[c(as.integer(sum(summary_lorfs$Count[1:3])+1):as.integer(sum(summary_lorfs$Count[1:4]))),]
+cat_5 <- G.lorfs[c(as.integer(sum(summary_lorfs$Count[1:4])+1):as.integer(sum(summary_lorfs$Count[1:5]))),]
+cat_6 <- G.lorfs[c(as.integer(sum(summary_lorfs$Count[1:5])+1):as.integer(sum(summary_lorfs$Count[1:6]))),]
+cat_7 <- G.lorfs[c(as.integer(sum(summary_lorfs$Count[1:6])+1):as.integer(sum(summary_lorfs$Count[1:7]))),]
+cat_8 <- G.lorfs[c(as.integer(sum(summary_lorfs$Count[1:7])+1):as.integer(sum(summary_lorfs$Count[1:8]))),]
+
+#p8 <- sample_n(cat_8, sum(summary_cds$Count[8]), replace=FALSE)
+#cat_8 <- anti_join(cat_8, p8, by='Signature')
+#p7 <- sample_n(cat_7, sum(summary_cds$Count[7]), replace=FALSE)
+#cat_7 <- anti_join(cat_7, p7, by='Signature')
+#p6 <- sample_n(cat_6, sum(summary_cds$Count[6]), replace=FALSE)
+#cat_6 <- anti_join(cat_6, p6, by='Signature')
+#p5 <- sample_n(cat_5, sum(summary_cds$Count[5]), replace=FALSE)
+#cat_5 <- anti_join(cat_5, p5, by='Signature')
+p4 <- sample_n(cat_4, sum(summary_cds$Count[3]), replace=FALSE)
+cat_4 <- anti_join(cat_4, p4, by='Signature')
+p3 <- sample_n(cat_3, sum(summary_cds$Count[2]), replace=FALSE)
+cat_3 <- anti_join(cat_3, p3, by='Signature')
+p2 <- sample_n(cat_2, sum(summary_cds$Count[1]), replace=FALSE)
+cat_2 <- anti_join(cat_2, p2, by='Signature')
+p1 <- sample_n(cat_1, sum(summary_cds$Count[1]), replace=FALSE)
+cat_1 <- anti_join(cat_1, p1, by='Signature')
+#p1 <- sample_n(cat_1, 0, replace=FALSE)
+#cat_1 <- anti_join(cat_1, p1, by='Signature')
+
+
+#bind_rows(p1,p2,p3,p4,p5,p6,p7,p8) %>% 
+#  mutate(Dataset = 1) -> G.lorfs.selected1
+
+bind_rows(p1, p2, p3, p4, cat_5, cat_6, cat_7, cat_8) %>% 
+  mutate(Dataset = 1) -> G.lorfs.selected1
+
+#bind_rows(p1, p2, p3, cat_4, cat_5, cat_6) %>% 
+#  mutate(Dataset = 1) -> G.lorfs.selected1
+
+
+```
+
+# Trekk ut negative ORFer slik at lengdefordelingen er ca lik OG det er like mange negative som positive ORFer
+
+```{r}
+
+# Denne koden må justeres ut i fra hvilket genom man prøver å prosessere
+
+extra <- sum(summary_cds$Count) - nrow(G.lorfs.selected1)
+seqs <- ceiling(extra/4)
+
+#remaining <- rbind(cat_1, cat_2, cat_3, cat_4)
+#rem_extra <- sample_n(remaining, extra, replace=FALSE)
+
+#bind_rows(rem_extra) %>% 
+#  mutate(Dataset = 2) -> G.lorfs.selected2
+
+#p6_extra <- sample_n(cat_6, seqs, replace=FALSE)
+#p5_extra <- sample_n(cat_5, seqs, replace=FALSE)
+p4_extra <- sample_n(cat_4, seqs, replace=FALSE)
+p3_extra <- sample_n(cat_3, seqs, replace=FALSE)
+p2_extra <- sample_n(cat_2, seqs, replace=FALSE)
+p1_extra <- sample_n(cat_1, seqs, replace=FALSE)
+
+bind_rows(p1_extra, p2_extra, p3_extra, p4_extra) %>% 
+  mutate(Dataset = 2) -> G.lorfs.selected2
+
+G.lorfs.selected <- bind_rows(G.lorfs.selected1, G.lorfs.selected2)
+
+#G.lorfs.selected <- G.lorfs.selected1
+
+```
+
+# Lengdefordeling av "lorfs selected" (både dataset 1 og 2)
+
+```{r}
+hist(G.lorfs.selected$Length, col="red", xlab="Length",
+   main="Length distribution of selected lorfs")
+```
+# Lengdefordeling av "lorfs selected" (kun dataset=1)
+
+```{r}
+hist(G.lorfs.selected1$Length, col="red", xlab="Length",
+   main="Length distribution of selected lorfs")
+```
+
+# Kombiner cds og lorfer til ett datasett
+
+```{r}
+
+G.dataset <- bind_rows(G.lorfs.selected, G.cds)
+G.dataset <- arrange(G.dataset, Length)
+
+G.dataset %>%
+  filter(Dataset == 1) -> G.dataset_uneven
+```
+
+# Lengdefordeling av selekterte lorfer og cds (ikke like mange av hver) (dataset=1)
+
+```{r}
+
+# Density plot of uneven dataset (uneven number of negative and positive orfs), but it has been attempted to make the length distribution equal  (dataset=1)
+
+fig_density_uneven <- ggplot(data=G.dataset_uneven, aes(Length, colour = Type)) +
+  geom_density() + xlab('Length') + ylab('Density') + labs(colour = "Type") + ggtitle('Length distribution of CDS and LORFs')
+
+ggsave("Length_density_G3_after.pdf", width = 10, height = 5)
+
+print(fig_density_uneven)
+
+```
+
+```{r}
+
+# Histogram plot of uneven dataset (uneven number of negative and positive orfs), but it has been attempted to make the length distribution equal (dataset=1)
+
+fig_hist_uneven <- ggplot(data=G.dataset_uneven, aes(Length, colour = Type)) + 
+  geom_histogram(alpha=0.6, position = 'identity') + xlab('Length') + ylab('Number of ORFs') + 
+  ggtitle('Length distribution of CDS and LORFs (uneven in number)')
+
+ggsave("Length_hist_uneven_G3.pdf", width = 10, height = 5)
+
+print(fig_hist_uneven)
+```
+
+# Lengdefordeling av selekterte lorfer og cds der det er like mange av hver
+
+```{r}
+
+fig_density_even <- ggplot(data=G.dataset, aes(Length, colour = Type)) +
+  geom_density() + xlab('Length') + ylab('Density') + labs(colour = "Type") + ggtitle('Length distribution of CDS and LORFs')
+
+ggsave("Length_dist_even_G3.pdf", width = 10, height = 5)
+
+print(fig_density_even)
+
+```
+
+```{r}
+
+fig_hist_even <- ggplot(data=G.dataset, aes(Length, colour = Type)) + 
+  geom_histogram(alpha=0.6, position = 'identity') + xlab('Length') + ylab('Number of ORFs') + 
+  ggtitle('Length distribution of CDS and LORFs (even in number)')
+
+ggsave("Length_hist_even_G3.pdf", width = 10, height = 5)
+
+print(fig_hist_even)
+
+```
+
+# Lagre datasette til ett genom
+
+```{r}
+
+# Denne koden må justeres ut i fra hvilket genom man prøver å prosessere
+
+genomes <- c("Mycobacterium tuberculosis",
+"Staphylococcus aureus",
+"Salmonella enterica",
+"Listeria monocytogenes",
+"Campylobacter jejuni",
+"Shigella flexneri",
+"Pseudomonas aeruginosa",
+"Bacillus subtilis",
+"Coxiella burnetii",
+"Chlamydia trachomatis",
+"Escherichia coli str. Sakai",
+"Escherichia coli str. K-12",
+"Caulobacter vibrioides",
+"Acinetobacter pittii",
+"Klebsiella pneumoniae")
+
+G.dataset %>%
+  mutate(Genome = genomes[15]) -> G15.dataset
+
+save(G15.dataset,file="G15_orfs.RData")
+
+```
