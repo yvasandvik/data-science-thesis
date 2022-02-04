@@ -4,4 +4,5 @@
 *.gz
 *.gff
 *.dot
+*.RDataTmp
 method/.ipynb_checkpoints
