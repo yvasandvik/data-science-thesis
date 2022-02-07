@@ -31,7 +31,7 @@ Length.tbl <- do.call("rbind", list(G1, G2, G3, G4, G5))
 Length.tbl %>%
   filter(Length < 4000) -> Length.tbl
 
-save(Length.tbl, file="Length_tbl.RData")
+#save(Length.tbl, file="Length_tbl.RData")
 
 ```
 
@@ -44,7 +44,6 @@ library(tidyverse)
 # Using geom_density() to make GC density plot
 fig <- ggplot(data=Length.tbl, aes(Length, colour = Genome)) +
   geom_density() + xlab('Length') + ylab('Density') + labs(colour = "Genome") + ggtitle('LORFs and Coding Genes')
-
 ggsave("Length_5.pdf", width = 10, height = 5)
 #ggsave("Length_5.png")
 
@@ -74,7 +73,7 @@ library(tidyverse)
 
 # Using geom_density() to make GC density plot
 fig <- ggplot(data=Length.tbl.cds, aes(Length, colour = Genome)) +
-  geom_density() + xlab('Length') + ylab('Density') + labs(colour = "Genome") + ggtitle('Coding Genes')
+  geom_density() + xlab('Length') + ylab('Density') + labs(colour = "Genome") + ggtitle('Coding Genes') + xlim(0, 0.8)  + ylim(0, 20)
 
 ggsave("Length_5_cds.pdf", width = 10, height = 5)
 #ggsave("Length__5_cds.png")
@@ -90,7 +89,7 @@ library(tidyverse)
 
 # Using geom_density() to make GC density plot
 fig <- ggplot(data=Length.tbl.lorfs, aes(Length, colour = Genome)) +
-  geom_density() + xlab('Length') + ylab('Density') + labs(colour = "Genome") + ggtitle('LORFs')
+  geom_density() + xlab('Length') + ylab('Density') + labs(colour = "Genome") + ggtitle('LORFs') + xlim(0, 0.8) + ylim(0, 20)
 
 ggsave("Length_5_lorfs.pdf", width = 10, height = 5)
 #ggsave("Length__5_lorfs.png")
