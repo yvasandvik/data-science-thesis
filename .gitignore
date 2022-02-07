@@ -5,6 +5,11 @@
 *.gff
 *.dot
 *.RDataTmp
+
+method/.ipynb_checkpoints
+
 script_convert_toCSV.Rmd
 script_kladd.Rmd
-method/.ipynb_checkpoints
+Random_Forest_Explained.ipynb
+
+RF_model_kladd.ipynb
