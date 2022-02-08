@@ -1,0 +1,82 @@
+---
+title: "Making plots - Comparing GC-content in ORFs"
+author: "Yva Sandvik"
+date: "2/7/2022"
+output: html_document
+---
+
+# Loading Rdata
+
+```{r}
+
+load("~/Documents/NMBU/Semester 12/Data Science Master/data-science-thesis/data_expo/G1_orf_features.RData")
+load("~/Documents/NMBU/Semester 12/Data Science Master/data-science-thesis/data_expo/G8_orf_features.RData")
+load("~/Documents/NMBU/Semester 12/Data Science Master/data-science-thesis/data_expo/G3_orf_features.RData")
+load("~/Documents/NMBU/Semester 12/Data Science Master/data-science-thesis/data_expo/G4_orf_features.RData")
+load("~/Documents/NMBU/Semester 12/Data Science Master/data-science-thesis/data_expo/G13_orf_features.RData")
+
+```
+
+# Selecting feature
+
+```{r, eval=FALSE}
+
+G1.features %>% select(GC_content, Type, Genome) -> G1
+G8.features %>% select(GC_content, Type, Genome) -> G2
+G3.features %>% select(GC_content, Type, Genome) -> G3
+G4.features %>% select(GC_content, Type, Genome) -> G4
+G13.features %>% select(GC_content, Type, Genome) -> G5
+
+GC.tbl <- do.call("rbind", list(G1, G2, G3, G4, G5))
+
+#save(Length.tbl, file="GC_tbl.RData")
+
+```
+
+```{r, eval=FALSE}
+
+GC.tbl %>%
+  filter(Type == 'CDS') -> GC.tbl.cds
+
+GC.tbl %>%
+  filter(Type == 'LORF') -> GC.tbl.lorfs
+
+#save(GC.tbl.lorfs, file="GC_tbl_lorfs.RData")
+#save(GC.tbl.cds, file="GC_tbl_cds.RData")
+```
+
+# Only CDS
+
+```{r}
+
+library(ggplot2)
+
+# Using geom_density() to make GC density plot
+fig <- ggplot(data=GC.tbl.cds, aes(x = GC_content, colour = Genome)) +
+  geom_density() + xlab('GC-content') + ylab('Density') + labs(colour = "Genome") + ggtitle('Coding Genes') + xlim(0, 0.85)  + ylim(0, 15)
+
+ggsave("GC_5_cds_4.pdf", width = 10, height = 5)
+#ggsave("GC__5_cds.png")
+
+print(fig)
+
+```
+
+# Only LORFS
+
+```{r}
+
+library(tidyverse)
+
+# Using geom_density() to make GC density plot
+fig <- ggplot(data=GC.tbl.lorfs, aes(GC_content, colour = Genome)) +
+  geom_density() + xlab('GC-content') + ylab('Density') + labs(colour = "Genome") + ggtitle('LORFs') + xlim(0, 0.85)  + ylim(0, 15)
+
+ggsave("GC_5_lorfs_4.pdf", width = 10, height = 5)
+#ggsave("GC__5_lorfs.png")
+
+print(fig)
+
+```
+
+

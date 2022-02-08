@@ -22,10 +22,10 @@ library(seqinr)
 
 # Denne koden må justeres ut i fra hvilket genom man prøver å prosessere
 
-load("~/Documents/NMBU/Semester 12/Data Science Master/data-science-thesis/data_expo/G1_orfs.RData")
+load("~/Documents/NMBU/Semester 12/Data Science Master/data-science-thesis/data_expo/G7_orfs.RData")
 
 
-G.dataset <- subset(G1.dataset, select=c(Length, Sequence))
+G.dataset <- subset(G7.dataset, select=c(Length, Sequence))
 
 ```
 
@@ -67,6 +67,7 @@ standardised_kmer <- Kmer_matrix/rowSums(Kmer_matrix)
 
 # Coverting from matrix to to data frame
 Kmer_2 <- as.data.frame(standardised_kmer)
+colnames(Kmer_2) <- paste("k_mer", colnames(Kmer_2), sep = "_")
 ```
 
 # Computing 3-mer features 
@@ -80,6 +81,7 @@ standardised_kmer <- Kmer_matrix/rowSums(Kmer_matrix)
 
 # Coverting from matrix to to data frame
 Kmer_3 <- as.data.frame(standardised_kmer)
+colnames(Kmer_3) <- paste("k_mer", colnames(Kmer_3), sep = "_")
 ```
 
 # Computing 4-mer features 
@@ -93,6 +95,7 @@ standardised_kmer <- Kmer_matrix/rowSums(Kmer_matrix)
 
 # Coverting from matrix to to data frame
 Kmer_4 <- as.data.frame(standardised_kmer)
+colnames(Kmer_4) <- paste("k_mer", colnames(Kmer_4), sep = "_")
 ```
 
 # Computing 5-mer features 
@@ -106,6 +109,7 @@ standardised_kmer <- Kmer_matrix/rowSums(Kmer_matrix)
 
 # Coverting from matrix to to data frame
 Kmer_5 <- as.data.frame(standardised_kmer)
+colnames(Kmer_5) <- paste("k_mer", colnames(Kmer_5), sep = "_")
 ```
 
 # Computing 6-mer features 
@@ -119,6 +123,7 @@ standardised_kmer <- Kmer_matrix/rowSums(Kmer_matrix)
 
 # Coverting from matrix to to data frame
 Kmer_6 <- as.data.frame(standardised_kmer)
+colnames(Kmer_6) <- paste("k_mer", colnames(Kmer_6), sep = "_")
 ```
 
 # Computing aminoacid-1-mer features
@@ -133,7 +138,8 @@ standardised_aa_mer <- aa_mer_matrix/rowSums(aa_mer_matrix)
 
 # Coverting from matrix to to data frame
 aa_mer_1 <- as.data.frame(standardised_aa_mer)
-
+aa_mer_1 <- select(aa_mer_1, -starts_with("*"))
+colnames(aa_mer_1) <- paste("aa_mer", colnames(aa_mer_1), sep = "_")
 ```
 
 # Computing aminoacid-2-mer features
@@ -148,7 +154,8 @@ standardised_aa_mer <- aa_mer_matrix/rowSums(aa_mer_matrix)
 
 # Coverting from matrix to to data frame
 aa_mer_2 <- as.data.frame(standardised_aa_mer)
-
+aa_mer_2 <- select(aa_mer_2, -starts_with("*"))
+colnames(aa_mer_2) <- paste("aa_mer", colnames(aa_mer_2), sep = "_")
 ```
 
 # Computing aminoacid-3-mer features
@@ -163,7 +170,8 @@ standardised_aa_mer <- aa_mer_matrix/rowSums(aa_mer_matrix)
 
 # Coverting from matrix to to data frame
 aa_mer_3 <- as.data.frame(standardised_aa_mer)
-
+aa_mer_3 <- select(aa_mer_3, -starts_with("*"))
+colnames(aa_mer_3) <- paste("aa_mer", colnames(aa_mer_3), sep = "_")
 ```
 
 # Computing codon bias feature (c_weight)
@@ -221,7 +229,7 @@ c_weight.tbl <- function(data){
 c_weights <- c_weight.tbl(G.dataset)
 c_weights <- as.data.frame(c_weights)
 
-colnames(c_weights) <- c("AAA_c_weight", "AAC_c_weight", "AAG_c_weight", "AAT_c_weight", "ACA_c_weight", "ACC_c_weight", "ACG_c_weight", "ACT_c_weight", "AGA_c_weight", "AGC_c_weight", "AGG_c_weight", "AGT_c_weight", "ATA_c_weight", "ATC_c_weight", "ATG_c_weight", "ATT_c_weight", "CAA_c_weight", "CAC_c_weight", "CAG_c_weight", "CAT_c_weight", "CCA_c_weight", "CCC_c_weight", "CCG_c_weight", "CCT_c_weight", "CGA_c_weight", "CGC_c_weight", "CGG_c_weight", "CGT_c_weight", "CTA_c_weight", "CTC_c_weight", "CTG_c_weight", "CTT_c_weight", "GAA_c_weight", "GAC_c_weight", "GAG_c_weight", "GAT_c_weight", "GCA_c_weight", "GCC_c_weight", "GCG_c_weight", "GCT_c_weight", "GGA_c_weight", "GGC_c_weight", "GGG_c_weight", "GGT_c_weight", "GTA_c_weight", "GTC_c_weight", "GTG_c_weight", "GTT_c_weight", "TAA_c_weight", "TAC_c_weight", "TAG_c_weight", "TAT_c_weight", "TCA_c_weight", "TCC_c_weight", "TCG_c_weight", "TCT_c_weight", "TGA_c_weight", "TGC_c_weight", "TGG_c_weight", "TGT_c_weight", "TTA_c_weight", "TTC_c_weight", "TTG_c_weight", "TTT_c_weight")
+colnames(c_weights) <- paste("c_weight", colnames(c_weights), sep = "_")
 
 ```
 
@@ -263,7 +271,7 @@ Start_features <- start_codon(G.dataset)
 
 # Denne koden må justeres ut i fra hvilket genom man prøver å prosessere
 
-G_features <- bind_cols(G15.dataset, GC_features, Start_features, Kmer_2, Kmer_3, Kmer_4, Kmer_5, Kmer_6, c_weights)
+G_features <- bind_cols(G7.dataset, GC_features, Start_features, Kmer_2, Kmer_3, Kmer_4, Kmer_5, Kmer_6, aa_mer_1, aa_mer_2, aa_mer_3, c_weights)
 
 # Need genome column, type column, and feature columns, the rest is not necessary 
 G_features <- subset(G_features, select=-c(Sequence, Category, Signature))
@@ -275,13 +283,13 @@ G_features <- subset(G_features, select=-c(Sequence, Category, Signature))
 
 # Denne koden må justeres ut i fra hvilket genom man prøver å prosessere
 
-G1.features <- G_features
+G7.features <- G_features
 
 # RData
-save(G1.features, file="G1_orf_features.RData")
+save(G7.features, file="G7_orf_features.RData")
 
 # CSV
-write.csv(G1.features, file="G1.features.csv")
+write.csv(G7.features, file="G7.features.csv")
 
 ```
 

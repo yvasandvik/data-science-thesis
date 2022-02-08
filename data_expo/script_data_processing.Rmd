@@ -27,11 +27,10 @@ output: html_document
 library(utils)
 library(microseq)
 
-path_fna <- "~/Documents/NMBU/Semester 12/Data Science Master/data-science-thesis/data_expo/fna/GCF_000006925.2_ASM692v2_genomic.fna.gz"
+path_fna <- "~/Documents/NMBU/Semester 12/Data Science Master/data-science-thesis/data_expo/fna/GCF_000240185.1_ASM24018v2_genomic.fna.gz"
 G <- readFasta(path_fna)
 
-path_gff <- "~/Documents/NMBU/Semester 12/Data Science Master/data-science-thesis/data_expo/gff/GCF_000006925.2_ASM692v2_genomic.gff"
-
+path_gff <- "~/Documents/NMBU/Semester 12/Data Science Master/data-science-thesis/data_expo/gff/GCF_000240185.1_ASM24018v2_genomic.gff"
 
 readGFF(path_gff) %>% 
   filter(Type == "CDS") -> G.gff
@@ -218,16 +217,16 @@ cat_8 <- G.lorfs[c(as.integer(sum(summary_lorfs$Count[1:7])+1):as.integer(sum(su
 #cat_7 <- anti_join(cat_7, p7, by='Signature')
 #p6 <- sample_n(cat_6, sum(summary_cds$Count[6]), replace=FALSE)
 #cat_6 <- anti_join(cat_6, p6, by='Signature')
-#p5 <- sample_n(cat_5, sum(summary_cds$Count[5]), replace=FALSE)
-#cat_5 <- anti_join(cat_5, p5, by='Signature')
+p5 <- sample_n(cat_5, sum(summary_cds$Count[4]), replace=FALSE)
+cat_5 <- anti_join(cat_5, p5, by='Signature')
 p4 <- sample_n(cat_4, sum(summary_cds$Count[3]), replace=FALSE)
 cat_4 <- anti_join(cat_4, p4, by='Signature')
 p3 <- sample_n(cat_3, sum(summary_cds$Count[2]), replace=FALSE)
 cat_3 <- anti_join(cat_3, p3, by='Signature')
 p2 <- sample_n(cat_2, sum(summary_cds$Count[1]), replace=FALSE)
 cat_2 <- anti_join(cat_2, p2, by='Signature')
-p1 <- sample_n(cat_1, sum(summary_cds$Count[1]), replace=FALSE)
-cat_1 <- anti_join(cat_1, p1, by='Signature')
+#p1 <- sample_n(cat_1, sum(summary_cds$Count[1]), replace=FALSE)
+#cat_1 <- anti_join(cat_1, p1, by='Signature')
 #p1 <- sample_n(cat_1, 0, replace=FALSE)
 #cat_1 <- anti_join(cat_1, p1, by='Signature')
 
@@ -235,12 +234,14 @@ cat_1 <- anti_join(cat_1, p1, by='Signature')
 #bind_rows(p1,p2,p3,p4,p5,p6,p7,p8) %>% 
 #  mutate(Dataset = 1) -> G.lorfs.selected1
 
-bind_rows(p1, p2, p3, p4, cat_5, cat_6, cat_7, cat_8) %>% 
-  mutate(Dataset = 1) -> G.lorfs.selected1
-
-#bind_rows(p1, p2, p3, cat_4, cat_5, cat_6) %>% 
+#bind_rows(p1, p2, p3, p4, cat_5, cat_6, cat_7, cat_8) %>% 
 #  mutate(Dataset = 1) -> G.lorfs.selected1
 
+#bind_rows(p1, p2, p3, p4, cat_5, cat_6) %>% 
+#  mutate(Dataset = 1) -> G.lorfs.selected1
+
+bind_rows(p2, p3, p4, p5, cat_6, cat_7, cat_8) %>% 
+  mutate(Dataset = 1) -> G.lorfs.selected1
 
 ```
 
@@ -266,7 +267,7 @@ p3_extra <- sample_n(cat_3, seqs, replace=FALSE)
 p2_extra <- sample_n(cat_2, seqs, replace=FALSE)
 p1_extra <- sample_n(cat_1, seqs, replace=FALSE)
 
-bind_rows(p1_extra, p2_extra, p3_extra, p4_extra) %>% 
+bind_rows(p5_extra, p2_extra, p3_extra, p4_extra) %>% 
   mutate(Dataset = 2) -> G.lorfs.selected2
 
 G.lorfs.selected <- bind_rows(G.lorfs.selected1, G.lorfs.selected2)
@@ -291,6 +292,8 @@ hist(G.lorfs.selected1$Length, col="red", xlab="Length",
 # Kombiner cds og lorfer til ett datasett
 
 ```{r}
+
+#G.lorfs.selected <- G.lorfs.selected1
 
 G.dataset <- bind_rows(G.lorfs.selected, G.cds)
 G.dataset <- arrange(G.dataset, Length)
