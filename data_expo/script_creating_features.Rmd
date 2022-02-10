@@ -22,10 +22,10 @@ library(seqinr)
 
 # Denne koden må justeres ut i fra hvilket genom man prøver å prosessere
 
-load("~/Documents/NMBU/Semester 12/Data Science Master/data-science-thesis/data_expo/G7_orfs.RData")
+load("~/Documents/NMBU/Semester 12/Data Science Master/data-science-thesis/data_expo/G5_orfs.RData")
 
 
-G.dataset <- subset(G7.dataset, select=c(Length, Sequence))
+G.dataset <- subset(G5.dataset, select=c(Length, Sequence))
 
 ```
 
@@ -67,7 +67,7 @@ standardised_kmer <- Kmer_matrix/rowSums(Kmer_matrix)
 
 # Coverting from matrix to to data frame
 Kmer_2 <- as.data.frame(standardised_kmer)
-colnames(Kmer_2) <- paste("k_mer", colnames(Kmer_2), sep = "_")
+colnames(Kmer_2) <- paste("2_mer", colnames(Kmer_2), sep = "_")
 ```
 
 # Computing 3-mer features 
@@ -81,7 +81,7 @@ standardised_kmer <- Kmer_matrix/rowSums(Kmer_matrix)
 
 # Coverting from matrix to to data frame
 Kmer_3 <- as.data.frame(standardised_kmer)
-colnames(Kmer_3) <- paste("k_mer", colnames(Kmer_3), sep = "_")
+colnames(Kmer_3) <- paste("3_mer", colnames(Kmer_3), sep = "_")
 ```
 
 # Computing 4-mer features 
@@ -95,7 +95,7 @@ standardised_kmer <- Kmer_matrix/rowSums(Kmer_matrix)
 
 # Coverting from matrix to to data frame
 Kmer_4 <- as.data.frame(standardised_kmer)
-colnames(Kmer_4) <- paste("k_mer", colnames(Kmer_4), sep = "_")
+colnames(Kmer_4) <- paste("4_mer", colnames(Kmer_4), sep = "_")
 ```
 
 # Computing 5-mer features 
@@ -109,7 +109,7 @@ standardised_kmer <- Kmer_matrix/rowSums(Kmer_matrix)
 
 # Coverting from matrix to to data frame
 Kmer_5 <- as.data.frame(standardised_kmer)
-colnames(Kmer_5) <- paste("k_mer", colnames(Kmer_5), sep = "_")
+colnames(Kmer_5) <- paste("5_mer", colnames(Kmer_5), sep = "_")
 ```
 
 # Computing 6-mer features 
@@ -123,7 +123,7 @@ standardised_kmer <- Kmer_matrix/rowSums(Kmer_matrix)
 
 # Coverting from matrix to to data frame
 Kmer_6 <- as.data.frame(standardised_kmer)
-colnames(Kmer_6) <- paste("k_mer", colnames(Kmer_6), sep = "_")
+colnames(Kmer_6) <- paste("6_mer", colnames(Kmer_6), sep = "_")
 ```
 
 # Computing aminoacid-1-mer features
@@ -139,7 +139,7 @@ standardised_aa_mer <- aa_mer_matrix/rowSums(aa_mer_matrix)
 # Coverting from matrix to to data frame
 aa_mer_1 <- as.data.frame(standardised_aa_mer)
 aa_mer_1 <- select(aa_mer_1, -starts_with("*"))
-colnames(aa_mer_1) <- paste("aa_mer", colnames(aa_mer_1), sep = "_")
+colnames(aa_mer_1) <- paste("1_aa_mer", colnames(aa_mer_1), sep = "_")
 ```
 
 # Computing aminoacid-2-mer features
@@ -155,7 +155,7 @@ standardised_aa_mer <- aa_mer_matrix/rowSums(aa_mer_matrix)
 # Coverting from matrix to to data frame
 aa_mer_2 <- as.data.frame(standardised_aa_mer)
 aa_mer_2 <- select(aa_mer_2, -starts_with("*"))
-colnames(aa_mer_2) <- paste("aa_mer", colnames(aa_mer_2), sep = "_")
+colnames(aa_mer_2) <- paste("2_aa_mer", colnames(aa_mer_2), sep = "_")
 ```
 
 # Computing aminoacid-3-mer features
@@ -171,7 +171,7 @@ standardised_aa_mer <- aa_mer_matrix/rowSums(aa_mer_matrix)
 # Coverting from matrix to to data frame
 aa_mer_3 <- as.data.frame(standardised_aa_mer)
 aa_mer_3 <- select(aa_mer_3, -starts_with("*"))
-colnames(aa_mer_3) <- paste("aa_mer", colnames(aa_mer_3), sep = "_")
+colnames(aa_mer_3) <- paste("3_aa_mer", colnames(aa_mer_3), sep = "_")
 ```
 
 # Computing codon bias feature (c_weight)
@@ -271,7 +271,7 @@ Start_features <- start_codon(G.dataset)
 
 # Denne koden må justeres ut i fra hvilket genom man prøver å prosessere
 
-G_features <- bind_cols(G7.dataset, GC_features, Start_features, Kmer_2, Kmer_3, Kmer_4, Kmer_5, Kmer_6, aa_mer_1, aa_mer_2, aa_mer_3, c_weights)
+G_features <- bind_cols(G5.dataset, GC_features, Start_features, Kmer_2, Kmer_3, Kmer_4, Kmer_5, Kmer_6, aa_mer_1, aa_mer_2, aa_mer_3, c_weights)
 
 # Need genome column, type column, and feature columns, the rest is not necessary 
 G_features <- subset(G_features, select=-c(Sequence, Category, Signature))
@@ -283,13 +283,13 @@ G_features <- subset(G_features, select=-c(Sequence, Category, Signature))
 
 # Denne koden må justeres ut i fra hvilket genom man prøver å prosessere
 
-G7.features <- G_features
+G5.features <- G_features
 
 # RData
-save(G7.features, file="G7_orf_features.RData")
+save(G5.features, file="G5_orf_features.RData")
 
 # CSV
-write.csv(G7.features, file="G7.features.csv")
+write.csv(G5.features, file="G5.features.csv")
 
 ```
 
