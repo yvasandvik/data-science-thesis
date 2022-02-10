@@ -5,6 +5,8 @@
 *.gff
 *.dot
 *.RDataTmp
+*.Rhistory
+*.RDataTmp1
 
 method/.ipynb_checkpoints
 
