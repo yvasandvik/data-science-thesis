@@ -27,10 +27,10 @@ output: html_document
 library(utils)
 library(microseq)
 
-path_fna <- "~/Documents/NMBU/Semester 12/Data Science Master/data-science-thesis/data_expo/fna/GCF_000240185.1_ASM24018v2_genomic.fna.gz"
+path_fna <- "~/Documents/NMBU/Semester 12/Data Science Master/data-science-thesis/data_expo/fna/GCF_000005845.2_ASM584v2_genomic.fna.gz"
 G <- readFasta(path_fna)
 
-path_gff <- "~/Documents/NMBU/Semester 12/Data Science Master/data-science-thesis/data_expo/gff/GCF_000240185.1_ASM24018v2_genomic.gff"
+path_gff <- "~/Documents/NMBU/Semester 12/Data Science Master/data-science-thesis/data_expo/gff/GCF_000005845.2_ASM584v2_genomic.gff"
 
 readGFF(path_gff) %>% 
   filter(Type == "CDS") -> G.gff
@@ -185,10 +185,9 @@ print(fig_density)
 
 # Normal histogram plot
 
-
 fig_hist <- ggplot(data=G.dataset, aes(Length, colour = Type)) + 
-  geom_histogram(alpha=0.6, position = 'identity') + xlab('Length') + ylab('Number of ORFs') + 
-  ggtitle('Length distribution of CDS and LORFs')
+  geom_histogram(alpha=0.6, position = 'identity') + xlab('Length') +
+  ylab('Number of ORFs') + ggtitle('Length distribution of CDS and LORFs') + facet_grid(rows = vars(Type), scales = "free_y")
 
 ggsave("Length_hist_G3_before.pdf", width = 10, height = 5)
 

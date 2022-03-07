@@ -98,4 +98,19 @@ print(fig)
 
 ```
 
+# Histogram plot before preprocessing
+
+```{r}
+
+G.dataset <- G1.dataset
+
+fig_hist <- ggplot(data=G.dataset, aes(Length, colour = Type)) + 
+  geom_histogram(alpha=0.6, position = 'identity') + xlab('Length') + ylab('Number of ORFs') + 
+  ggtitle('Length distribution of CDS and LORFs')
+
+ggsave("Length_hist_G3_before.pdf", width = 10, height = 5)
+
+print(fig_hist)
+
+```
 

@@ -1,0 +1,36 @@
+---
+title: "Find ORFs"
+author: "Yva Sandvik"
+date: "2/22/2022"
+output: html_document
+---
+# Last inn genomet
+
+```{r}
+
+library(utils)
+library(microseq)
+
+path_fna <- "~/Documents/NMBU/Semester 12/Data Science Master/data-science-thesis/data_expo/fna/GCF_000240185.1_ASM24018v2_genomic.fna.gz"
+G <- readFasta(path_fna)
+
+path_gff <- "~/Documents/NMBU/Semester 12/Data Science Master/data-science-thesis/data_expo/gff/GCF_000240185.1_ASM24018v2_genomic.gff"
+
+readGFF(path_gff) %>% 
+  filter(Type == "CDS") -> G.gff
+
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(hrbrthemes)
+
+```
+
+
+# Finn totalt antall orfer
+
+```{r}
+
+findOrfs(G) -> orf.tbl 
+
+```
