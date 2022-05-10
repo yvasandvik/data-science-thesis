@@ -33,6 +33,23 @@ GC.tbl <- do.call("rbind", list(G1, G2, G3, G4, G5))
 
 ```
 
+# GC innhold graf med både LORFer og CDS
+
+```{r}
+
+
+library(ggplot2)
+
+# Using geom_density() to make GC density plot
+fig <- ggplot(data=GC.tbl, aes(x = GC_content, colour = Genome)) +
+  geom_density() + xlab('GC-content') + ylab('Density') + labs(colour = "Genome") + ggtitle('Coding Genes') + facet_grid(rows = vars(Type), scales = "free_y") + ylim(0, 15)
+
+ggsave("GC_5_genomes.pdf", width = 10, height = 5)
+
+print(fig)
+
+```
+
 ```{r, eval=FALSE}
 
 GC.tbl %>%

@@ -1,0 +1,56 @@
+---
+title: "Translating ORFs - RNN dataset"
+author: "Yva Sandvik"
+date: "3/14/2022"
+output: html_document
+---
+
+
+```{r}
+
+library(remotes)
+#install_github('larssnip/microseq', 'translate-codon', force = TRUE)
+#install_github('larssnip/microclass', 'in-frame-K-mer', force = TRUE)
+library(microclass)
+library(microseq)
+library(seqinr)
+
+```
+
+
+# Load one genome at a time
+
+```{r}
+
+load("~/Documents/NMBU/Semester 12/Data Science Master/data-science-thesis/data_expo/G1_orfs.RData")
+
+G1.dataset -> G.dataset
+
+```
+
+# Translate each sequence into amino acid sequences
+
+```{r}
+
+G.dataset %>%
+  select(Type, Sequence, Dataset) %>%
+  mutate(Translated = microseq::translate(Sequence, 
+                                               M.start=FALSE, no.stop=FALSE)) -> G.translated
+
+```
+
+# Lagre nytt dataset for hvert genom
+
+```{r}
+
+# RData
+save(G.translated, file="G1_translated.RData")
+
+# CSV
+write.csv(G.translated, file="G1_translated.csv")
+
+```
+
+
+
+

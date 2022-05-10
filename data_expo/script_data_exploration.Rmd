@@ -176,7 +176,7 @@ fig_density <- ggplot(data=G.dataset, aes(Length, colour = Type)) +
   geom_density() + xlab('Length') + ylab('Density') + labs(colour = "Type") + 
   ggtitle('Length distribution of CDS and LORFs')
 
-ggsave("Length_density_G3_before.pdf", width = 10, height = 5)
+#ggsave("Length_density_G3_before.pdf", width = 10, height = 5)
 
 print(fig_density)
 
@@ -185,11 +185,11 @@ print(fig_density)
 
 # Normal histogram plot
 
-fig_hist <- ggplot(data=G.dataset, aes(Length, colour = Type)) + 
+fig_hist <- ggplot(data=G.dataset, aes(Length, fill= Type)) + 
   geom_histogram(alpha=0.6, position = 'identity') + xlab('Length') +
-  ylab('Number of ORFs') + ggtitle('Length distribution of CDS and LORFs') + facet_grid(rows = vars(Type), scales = "free_y")
+  ylab('Number of ORFs') + ggtitle('Original length distribution of CDS and LORFs') + facet_grid(rows = vars(Type), scales = "free_y")
 
-ggsave("Length_hist_G3_before.pdf", width = 10, height = 5)
+ggsave("length_hist_G1_before.pdf", width = 10, height = 5)
 
 print(fig_hist)
 ```
@@ -216,16 +216,16 @@ cat_8 <- G.lorfs[c(as.integer(sum(summary_lorfs$Count[1:7])+1):as.integer(sum(su
 #cat_7 <- anti_join(cat_7, p7, by='Signature')
 #p6 <- sample_n(cat_6, sum(summary_cds$Count[6]), replace=FALSE)
 #cat_6 <- anti_join(cat_6, p6, by='Signature')
-p5 <- sample_n(cat_5, sum(summary_cds$Count[4]), replace=FALSE)
-cat_5 <- anti_join(cat_5, p5, by='Signature')
-p4 <- sample_n(cat_4, sum(summary_cds$Count[3]), replace=FALSE)
+#p5 <- sample_n(cat_5, sum(summary_cds$Count[5]), replace=FALSE)
+#cat_5 <- anti_join(cat_5, p5, by='Signature')
+p4 <- sample_n(cat_4, sum(summary_cds$Count[4]), replace=FALSE)
 cat_4 <- anti_join(cat_4, p4, by='Signature')
-p3 <- sample_n(cat_3, sum(summary_cds$Count[2]), replace=FALSE)
+p3 <- sample_n(cat_3, sum(summary_cds$Count[3]), replace=FALSE)
 cat_3 <- anti_join(cat_3, p3, by='Signature')
-p2 <- sample_n(cat_2, sum(summary_cds$Count[1]), replace=FALSE)
+p2 <- sample_n(cat_2, sum(summary_cds$Count[2]), replace=FALSE)
 cat_2 <- anti_join(cat_2, p2, by='Signature')
-#p1 <- sample_n(cat_1, sum(summary_cds$Count[1]), replace=FALSE)
-#cat_1 <- anti_join(cat_1, p1, by='Signature')
+p1 <- sample_n(cat_1, sum(summary_cds$Count[1]), replace=FALSE)
+cat_1 <- anti_join(cat_1, p1, by='Signature')
 #p1 <- sample_n(cat_1, 0, replace=FALSE)
 #cat_1 <- anti_join(cat_1, p1, by='Signature')
 
@@ -233,14 +233,14 @@ cat_2 <- anti_join(cat_2, p2, by='Signature')
 #bind_rows(p1,p2,p3,p4,p5,p6,p7,p8) %>% 
 #  mutate(Dataset = 1) -> G.lorfs.selected1
 
-#bind_rows(p1, p2, p3, p4, cat_5, cat_6, cat_7, cat_8) %>% 
-#  mutate(Dataset = 1) -> G.lorfs.selected1
+bind_rows(p1, p2, p3, p4, cat_5, cat_6, cat_7, cat_8) %>% 
+  mutate(Dataset = 1) -> G.lorfs.selected1
 
 #bind_rows(p1, p2, p3, p4, cat_5, cat_6) %>% 
 #  mutate(Dataset = 1) -> G.lorfs.selected1
 
-bind_rows(p2, p3, p4, p5, cat_6, cat_7, cat_8) %>% 
-  mutate(Dataset = 1) -> G.lorfs.selected1
+#bind_rows(p2, p3, p4, p5, cat_6, cat_7, cat_8) %>% 
+#  mutate(Dataset = 1) -> G.lorfs.selected1
 
 ```
 
@@ -266,7 +266,7 @@ p3_extra <- sample_n(cat_3, seqs, replace=FALSE)
 p2_extra <- sample_n(cat_2, seqs, replace=FALSE)
 p1_extra <- sample_n(cat_1, seqs, replace=FALSE)
 
-bind_rows(p5_extra, p2_extra, p3_extra, p4_extra) %>% 
+bind_rows(p1_extra, p2_extra, p3_extra, p4_extra) %>% 
   mutate(Dataset = 2) -> G.lorfs.selected2
 
 G.lorfs.selected <- bind_rows(G.lorfs.selected1, G.lorfs.selected2)
@@ -310,7 +310,7 @@ G.dataset %>%
 fig_density_uneven <- ggplot(data=G.dataset_uneven, aes(Length, colour = Type)) +
   geom_density() + xlab('Length') + ylab('Density') + labs(colour = "Type") + ggtitle('Length distribution of CDS and LORFs')
 
-ggsave("Length_density_G3_after.pdf", width = 10, height = 5)
+#ggsave("Length_density_G3_after.pdf", width = 10, height = 5)
 
 print(fig_density_uneven)
 
@@ -320,23 +320,24 @@ print(fig_density_uneven)
 
 # Histogram plot of uneven dataset (uneven number of negative and positive orfs), but it has been attempted to make the length distribution equal (dataset=1)
 
-fig_hist_uneven <- ggplot(data=G.dataset_uneven, aes(Length, colour = Type)) + 
-  geom_histogram(alpha=0.6, position = 'identity') + xlab('Length') + ylab('Number of ORFs') + 
-  ggtitle('Length distribution of CDS and LORFs (uneven in number)')
+fig_hist <- ggplot(data=G.dataset_uneven, aes(Length, fill= Type)) + 
+  geom_histogram(alpha=0.6, position = 'identity') + xlab('Length') +
+  ylab('Number of ORFs') + ggtitle('Length distribution of CDS and LORFs (dataset 1)') + facet_grid(rows = vars(Type), scales = "free_y")
 
-ggsave("Length_hist_uneven_G3.pdf", width = 10, height = 5)
+ggsave("Length_hist_uneven_G1.pdf", width = 10, height = 5)
 
-print(fig_hist_uneven)
+print(fig_hist)
+
 ```
 
 # Lengdefordeling av selekterte lorfer og cds der det er like mange av hver
 
 ```{r}
 
-fig_density_even <- ggplot(data=G.dataset, aes(Length, colour = Type)) +
-  geom_density() + xlab('Length') + ylab('Density') + labs(colour = "Type") + ggtitle('Length distribution of CDS and LORFs')
+fig_density_even <- ggplot(data=G.dataset, aes(, colour = Type)) +
+  geom_density() + xlab('Total number of ORFs') + ylab('Density') + labs(colour = "Type") + ggtitle('Length distribution of CDS and LORFs')
 
-ggsave("Length_dist_even_G3.pdf", width = 10, height = 5)
+#ggsave("Length_dist_even_G3.pdf", width = 10, height = 5)
 
 print(fig_density_even)
 
@@ -344,11 +345,11 @@ print(fig_density_even)
 
 ```{r}
 
-fig_hist_even <- ggplot(data=G.dataset, aes(Length, colour = Type)) + 
-  geom_histogram(alpha=0.6, position = 'identity') + xlab('Length') + ylab('Number of ORFs') + 
-  ggtitle('Length distribution of CDS and LORFs (even in number)')
+fig_hist_even <- ggplot(data=G.dataset, aes(Length, fill= Type)) + 
+  geom_histogram(alpha=0.6, position = 'identity') + xlab('Length') +
+  ylab('Number of ORFs') + ggtitle('Length distribution of CDS and LORFs (dataset 2)') + facet_grid(rows = vars(Type), scales = "free_y")
 
-ggsave("Length_hist_even_G3.pdf", width = 10, height = 5)
+ggsave("Length_hist_even_G1.pdf", width = 10, height = 5)
 
 print(fig_hist_even)
 

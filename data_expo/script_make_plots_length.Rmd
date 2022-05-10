@@ -5,6 +5,12 @@ date: "1/27/2022"
 output: html_document
 ---
 
+```{r}
+
+library(tidyverse)
+
+```
+
 # Loading Rdata
 
 ```{r}
@@ -43,15 +49,15 @@ library(tidyverse)
 
 # Using geom_density() to make GC density plot
 fig <- ggplot(data=Length.tbl, aes(Length, colour = Genome)) +
-  geom_density() + xlab('Length') + ylab('Density') + labs(colour = "Genome") + ggtitle('LORFs and Coding Genes')
+  geom_density() + xlab('Length') + ylab('Density') + labs(colour = "Genome") + ggtitle('Length distribution in LORFs and CDS') + facet_grid(rows = vars(Type), scales = "free_y")
+
 ggsave("Length_5.pdf", width = 10, height = 5)
-#ggsave("Length_5.png")
 
 print(fig)
 
 ```
 
-# Only CDS
+
 
 ```{r, eval=FALSE}
 
@@ -67,6 +73,8 @@ Length.tbl %>%
 ##save(Length.tbl.cds, file="Length_tbl_cds.RData")
 ```
 
+# Only CDS
+
 ```{r}
 
 library(tidyverse)
@@ -75,7 +83,7 @@ library(tidyverse)
 fig <- ggplot(data=Length.tbl.cds, aes(Length, colour = Genome)) +
   geom_density() + xlab('Length') + ylab('Density') + labs(colour = "Genome") + ggtitle('Coding Genes') + xlim(0, 0.8)  + ylim(0, 20)
 
-ggsave("Length_5_cds.pdf", width = 10, height = 5)
+#ggsave("Length_5_cds.pdf", width = 10, height = 5)
 #ggsave("Length__5_cds.png")
 
 print(fig)
@@ -91,7 +99,7 @@ library(tidyverse)
 fig <- ggplot(data=Length.tbl.lorfs, aes(Length, colour = Genome)) +
   geom_density() + xlab('Length') + ylab('Density') + labs(colour = "Genome") + ggtitle('LORFs') + xlim(0, 0.8) + ylim(0, 20)
 
-ggsave("Length_5_lorfs.pdf", width = 10, height = 5)
+#ggsave("Length_5_lorfs.pdf", width = 10, height = 5)
 #ggsave("Length__5_lorfs.png")
 
 print(fig)
